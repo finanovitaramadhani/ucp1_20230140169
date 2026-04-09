@@ -21,8 +21,11 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'quantity' => 'required|integer',
             'price' => 'required|numeric',
-            'user_id' => 'required|exists:users,id',
+
         ]);
+
+        // otomatis isi user_id dari user yang login
+        $validated['user_id'] = auth()->id();
 
         $product = Product::create($validated);
 
@@ -61,6 +64,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $this->authorize('update', $product);
+
         $users = User::orderBy('name')->get();
 
         return view('product.edit', compact('product', 'users'));
@@ -70,8 +75,15 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
+        $this->authorize('delete', $product);
+
         $product->delete();
 
         return redirect()->route('product.index')->with('success', 'Product berhasil dihapus');
+    }
+
+    public function export()
+    {
+        return "Export berhasil (hanya admin yang bisa akses)";
     }
 }
